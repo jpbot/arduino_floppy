@@ -12,11 +12,9 @@
 #define SIDE1   11  //   FDC 32
 #define DSKCHG   7  // DRIVE 34
 
+#define PULSETIME 6
+
 void setup() {
-  Serial.begin(115200);
-  while(!Serial){
-  }
-  
   //Set the input pins for input, turn on the pullup
   pinMode(IDX, INPUT_PULLUP);
   pinMode(TRK0, INPUT_PULLUP);
@@ -44,21 +42,72 @@ void setup() {
   digitalWrite(WGATE, HIGH);
   digitalWrite(SIDE1, HIGH);
 
+  Serial.begin(115200);
+  while(!Serial){
+  // wait for serial
+  }
   Serial.println("BEGIN\n");
+  delay(1000);
+  stepAllTheWayIn();
+  stepAllTheWayOut();
+  stepAllTheWayIn();
   test_fdd();
   Serial.println("\nEND");
 
 }
 
+//step the read/write head all the way to the outside
+void stepAllTheWayOut() {
+  for(int i=0;i<100;i++) {
+//    printState("Stepping Out");
+    stepOutALittle();
+  }
+}
+
+//step the read/write head all the way to the center
+void stepAllTheWayIn() {
+  for(int i=0;i<100;i++) {
+    //printState("Stepping In");
+    stepInALittle();
+  }
+}
+
+//move the head towards the outside a little
+void stepOutALittle() {
+  digitalWrite(DIR,HIGH);
+  stepPulse();
+}
+
+//move the head towards the center a little
+void stepInALittle() {
+  digitalWrite(DIR,LOW);
+  stepPulse();
+}
+
+//pulse the step pin
+void stepPulse() {
+  digitalWrite(STEP,LOW);
+  delay(PULSETIME);
+  digitalWrite(STEP,HIGH);
+}
+
 void test_fdd(){
   Serial.println("turning on DS1");
   digitalWrite(DS1, LOW);
+  digitalWrite(MOT1, LOW);
+  
+  stepAllTheWayIn();
+  stepAllTheWayOut();
+  stepAllTheWayIn();
+  
   delay(2000);
+  digitalWrite(MOT1, HIGH);
   digitalWrite(DS1, HIGH);
   Serial.println("turning off DS1");
 }
 
 
 void loop(){
+  
 }
 
